@@ -10,6 +10,16 @@ easy = [[8,6,0,0,0,4,0,0,0],
         [0,5,0,4,0,0,0,8,9],
         [0,0,0,5,0,7,6,0,2]]
 
+two_sols = [[9,0,6,0,7,0,4,0,3],
+            [0,0,0,4,0,0,2,0,0],
+            [0,7,0,0,2,3,0,1,0],
+            [5,0,0,0,0,0,1,0,0],
+            [0,4,0,2,0,8,0,6,0],
+            [0,0,3,0,0,0,0,0,5],
+            [0,3,0,7,0,0,0,5,0],
+            [0,0,7,0,0,5,0,0,0],
+            [4,0,5,0,1,0,7,0,8]]
+
 medium = [[0,8,0,0,5,0,0,9,0],
           [0,0,0,6,0,0,2,0,3],
           [4,2,7,0,0,3,0,6,0],
@@ -112,8 +122,9 @@ def solve(board):
                         #If the recursive call returns false then we have to backtrack
                         board[i][j] = 0
                 return False
-    #If all the cells are filled then a solution has been found and we can print it and exit the program
-    print_board(board)
+    #If all the cells are filled then a solution has been found and we can print it and return true
+    print_board(board) 
+    print("=====================")
     return True
 
 #Finally we can call the solver on the board
