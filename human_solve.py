@@ -226,10 +226,9 @@ def hidden_singles(grid):
 
 #1.2. Hidden pairs
 #If two cells in a row, column or box contain the same two candidates, then we can remove all other candidates from these two cells
-#Computationaly heavy because for each unsolved cell we have to check the "intersection" with all other unsolved cells in the row, column and box
-#Harder than it looks : checking the length of the intersection is not enough because we can have a case where two cells have 3 candidates in common
+#Checking the length of the intersection is not enough because we can have a case where two cells have 3 candidates in common
 #but only 2 of them are "unique" on the row, column or box, so we have to "choose" the two right candidates and remove the others
-#There can be conflicts with hidden triples if the implemntation is not careful : typically if we have 3 cells that contain a hidden triple, we can
+#There can be conflicts with hidden triples if the implementation is not careful : typically if we have 3 cells that contain a hidden triple, we can
 #wrongly identify a hidden pair in two of them => {2,5,6} {2,6} {2,5} is a hidden triple, but we can wrongly identify {2,5} {2,6} as a hidden pair
 #and remove 5 or 6 from the {2,5,6} cell even though it is an error to do so !
 #In order to avoid this we could look for hidden pairs, triples and quads and then choose from this, but we will only implement hidden pairs for now
@@ -241,13 +240,140 @@ def hidden_singles(grid):
 #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
 #The implementation will be very computationaly intensive, and I don't see a way to make it much more efficient, other than maybe using a different
 #data structure to represent the grid, but I don't think it would make much of a difference
+from itertools import combinations
 def hidden_pairs(grid):
     removed = 0
     for i in range(len(grid)):
         for j in range(len(grid[0])):
             #If the cell is not solved yet then we check the row, col and box for hidden pairs
             if len(grid[i][j]) > 1:
-                
-
+                #Check row
+                for k in range(len(grid[0])):
+                    if j!=k:
+                        #Here we make use of the intersection method of sets
+                        inter = set(grid[i][j]).intersection(set(grid[i][k]))
+                        if len(inter) == 2:
+                            #If the intersection is of length 2 then we have a hidden pair, but we have to check that it is not part of a hidden triple
+                            #or quad, so we have to check the intersection of this pair with all other unsolved cells
+                            pair = True
+                            for l in range(len(grid[0])):
+                                if l!=j and l!=k and len(grid[i][l]) > 1: #We can just check unsolved cells
+                                    if len(inter.intersection(set(grid[i][l]))) != 0:
+                                        #If the intersection is not empty then we don't have a hidden pair
+                                        pair = False
+                                        break
+                            #If we have a hidden pair then we can remove all other candidates from the two cells
+                            if pair == True:
+                                rm_1 = len(grid[i][j]) - 2
+                                rm_2 = len(grid[i][k]) - 2
+                                removed += rm_1 + rm_2
+                                grid[i][j] = list(inter)
+                                grid[i][k] = list(inter)
+                        elif len(inter) > 2:
+                            #If the intersection is of length > 2 then we have to check all the possible pairs in the intesection against the other unsolved
+                            #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
+                            #We will use itertools.combinations to get all the possible pairs
+                            combi = combinations(inter,2)
+                            for l in combi:
+                                for m in range(len(grid[0])):
+                                    if m!=j and m!=k and len(grid[i][m]) > 1: #We can just check unsolved cells
+                                        if len(set(l).intersection(set(grid[i][m]))) != 0:
+                                            #If the intersection is not empty then we don't have a hidden pair and we can remove it from the list of pairs
+                                            combi.remove(l)
+                                            break
+                            #Finally, if there is only one pair left then we have a hidden pair and we can remove all other candidates from the two cells
+                            if len(combi) == 1:
+                                rm_1 = len(grid[i][j]) - 2
+                                rm_2 = len(grid[i][k]) - 2
+                                removed += rm_1 + rm_2
+                                grid[i][j] = list(combi[0])
+                                grid[i][k] = list(combi[0])
+                #Check column
+                for k in range(len(grid)):
+                    if i!=k:
+                        #Here we make use of the intersection method of sets
+                        inter = set(grid[i][j]).intersection(set(grid[k][j]))
+                        if len(inter) == 2:
+                            #If the intersection is of length 2 then we have a hidden pair, but we have to check that it is not part of a hidden triple
+                            #or quad, so we have to check the intersection of this pair with all other unsolved cells
+                            pair = True
+                            for l in range(len(grid)):
+                                if l!=i and l!=k and len(grid[l][j]) > 1: #We can just check unsolved cells
+                                    if len(inter.intersection(set(grid[l][j]))) != 0:
+                                        #If the intersection is not empty then we don't have a hidden pair
+                                        pair = False
+                                        break
+                            #If we have a hidden pair then we can remove all other candidates from the two cells
+                            if pair == True:
+                                rm_1 = len(grid[i][j]) - 2
+                                rm_2 = len(grid[k][j]) - 2
+                                removed += rm_1 + rm_2
+                                grid[i][j] = list(inter)
+                                grid[k][j] = list(inter)
+                        elif len(inter) > 2:
+                            #If the intersection is of length > 2 then we have to check all the possible pairs in the intesection against the other unsolved
+                            #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
+                            #We will use itertools.combinations to get all the possible pairs
+                            combi = combinations(inter,2)
+                            for l in combi:
+                                for m in range(len(grid)):
+                                    if m!=i and m!=k and len(grid[m][j]) > 1: #We can just check unsolved cells
+                                        if len(set(l).intersection(set(grid[m][j]))) != 0:
+                                            #If the intersection is not empty then we don't have a hidden pair and we can remove it from the list of pairs
+                                            combi.remove(l)
+                                            break
+                            #Finally, if there is only one pair left then we have a hidden pair and we can remove all other candidates from the two cells
+                            if len(combi) == 1:
+                                rm_1 = len(grid[i][j]) - 2
+                                rm_2 = len(grid[k][j]) - 2
+                                removed += rm_1 + rm_2
+                                grid[i][j] = list(combi[0])
+                                grid[k][j] = list(combi[0])
+                #Check box
+                box_i = i//3
+                box_j = j//3
+                for k in range(box_i*3,box_i*3+3):
+                        for l in range(box_j*3,box_j*3+3):
+                            if k!=i and l!=j:
+                                #Here we make use of the intersection method of sets
+                                inter = set(grid[i][j]).intersection(set(grid[k][l]))
+                                if len(inter) == 2:
+                                    #If the intersection is of length 2 then we have a hidden pair, but we have to check that it is not part of a hidden triple
+                                    #or quad, so we have to check the intersection of this pair with all other unsolved cells
+                                    pair = True
+                                    for m in range(box_i*3,box_i*3+3):
+                                        for n in range(box_j*3,box_j*3+3):
+                                            if m!=i and m!=k and n!=j and n!=l and len(grid[m][n]) > 1: #We can just check unsolved cells
+                                                if len(inter.intersection(set(grid[m][n]))) != 0:
+                                                    #If the intersection is not empty then we don't have a hidden pair
+                                                    pair = False
+                                                    break
+                                    #If we have a hidden pair then we can remove all other candidates from the two cells
+                                    if pair == True:
+                                        rm_1 = len(grid[i][j]) - 2
+                                        rm_2 = len(grid[k][l]) - 2
+                                        removed += rm_1 + rm_2
+                                        grid[i][j] = list(inter)
+                                        grid[k][l] = list(inter)
+                                elif len(inter) > 2:
+                                    #If the intersection is of length > 2 then we have to check all the possible pairs in the intesection against the other unsolved
+                                    #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
+                                    #We will use itertools.combinations to get all the possible pairs
+                                    combi = combinations(inter,2)
+                                    for o in combi:
+                                        for m in range(box_i*3,box_i*3+3):
+                                            for n in range(box_j*3,box_j*3+3):
+                                                if m!=i and m!=k and n!=j and n!=l and len(grid[m][n]) > 1: #We can just check unsolved cells
+                                                    if len(set(o).intersection(set(grid[m][n]))) != 0:
+                                                        #If the intersection is not empty then we don't have a hidden pair and we can remove it from the list of pairs
+                                                        combi.remove(o)
+                                                        break
+                                    #Finally, if there is only one pair left then we have a hidden pair and we can remove all other candidates from the two cells
+                                    if len(combi) == 1:
+                                        rm_1 = len(grid[i][j]) - 2
+                                        rm_2 = len(grid[k][l]) - 2
+                                        removed += rm_1 + rm_2
+                                        grid[i][j] = list(combi[0])
+                                        grid[k][l] = list(combi[0])
 
 #===============================================================================================================================================
