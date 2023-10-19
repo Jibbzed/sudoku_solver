@@ -9,8 +9,8 @@
 #The methods will be applied in order until either no new digits can be found (in which case these techniques are not enough) or
 #the puzzle is completed
 
-easy = "8,6,0,0,0,4,0,0,0,0,0,0,9,0,0,8,0,0,3,0,4,0,0,0,0,6,7,6,2,0,0,4,5,7,9,1,5,3,9,0,8,1,4,0,6,0,0,7,0,2,9,0,0,0,0,0,3,0,0,6,0,0,0,0,5,0,4,0,0,0,8,9,0,0,0,5,0,7,6,0,2"
-puzzle = "1,0,0,6,8,5,0,7,0,0,6,0,0,1,0,0,0,0,5,9,0,0,0,4,0,6,0,0,0,7,0,6,0,0,0,0,0,1,0,0,0,0,0,0,7,6,0,0,0,9,0,2,5,4,0,0,0,0,7,3,0,9,1,0,0,0,0,5,0,0,0,6,8,0,0,0,0,0,3,0,0"
+easy = "860004000000900800304000067620045791539081406007029000003006000050400089000507602"
+puzzle = "100685070060010000590004060007060000010000007600090254000073091000050006800000300"
 
 #Here is how the puzzle will be represented and solved :
 #Each cell will be represented by a list of possible digits => in the begining given digits are alone, and empty cells contain all the digits
@@ -26,7 +26,7 @@ def grid_from_string(numbers):
     for i in range(9):
         row = []
         for j in range(9):
-            row.append([numbers[i*9+j]])
+            row.append([int(numbers[i*9+j])])
         grid.append(row)
     return grid
 
@@ -140,7 +140,7 @@ def naked_pairs(grid):
                         break
                 #Check column
                 for k in range(len(grid)):
-                    if k!=j and grid[i][j] == grid[k][j]: #We can just use equality because the lists are sorted
+                    if k!=i and grid[i][j] == grid[k][j]: #We can just use equality because the lists are sorted
                         #If we find such a cell, then we can remove these two candidates from all other cells in the column
                         for l in range(len(grid)):
                             if l!=i and l!=k:
@@ -185,6 +185,7 @@ def hidden_singles(grid):
             if len(grid[i][j]) > 1:
                 #For each candidate in the cell
                 for k in range(len(grid[i][j])):
+                    found = False
                     #Check row
                     for l in range(len(grid[0])):
                         if j!=l and grid[i][j][k] in grid[i][l]:
@@ -194,7 +195,7 @@ def hidden_singles(grid):
                     if found == False:
                         removed += len(grid[i][j]) - 1
                         grid[i][j] = [grid[i][j][k]]
-                        continue
+                        break
                     #Reset the boolean value
                     found = False
                     #Check column
@@ -206,7 +207,7 @@ def hidden_singles(grid):
                     if found == False:
                         removed += len(grid[i][j]) - 1
                         grid[i][j] = [grid[i][j][k]]
-                        continue
+                        break
                     #Reset the boolean value
                     found = False
                     #Check box
@@ -221,7 +222,7 @@ def hidden_singles(grid):
                     if found == False:
                         removed += len(grid[i][j]) - 1
                         grid[i][j] = [grid[i][j][k]]
-                        continue
+                        break
     return (grid, removed)
 
 #1.2. Hidden pairs
@@ -396,3 +397,40 @@ def hidden_pairs(grid):
                                         grid[k][l] = list(combi[0])
 
 #===============================================================================================================================================
+
+#Define a solve function that will apply the different methods until the puzzle is solved or no more candidates can be removed
+def solve(grid):
+    left = 81
+    removed = 1
+    while(left!=0 and removed!=0):
+        removed = 0
+        grid, rm = simple_elimination(grid)
+        removed += rm
+        grid, rm = naked_pairs(grid)
+        removed += rm
+        grid, rm = hidden_singles(grid)
+        removed += rm
+        grid, rm = hidden_pairs(grid)
+        removed += rm
+        left = cells_left(grid)
+    return grid
+
+#===============================================================================================================================================
+
+#Test the functions
+to_solve = puzzle
+grid = grid_from_string(to_solve)
+print_grid(grid)
+grid = fill_candidates(grid)
+print()
+print_grid(grid)
+print()
+removed = 1
+while(removed!=0):
+    grid, removed1 = simple_elimination(grid)
+    grid, removed2 = naked_pairs(grid)
+    grid, removed3 = hidden_singles(grid)
+    print_grid(grid)
+    print()
+    print(grid)
+    removed = removed1 + removed2 + removed3
