@@ -276,7 +276,10 @@ def hidden_pairs(grid):
                             #If the intersection is of length > 2 then we have to check all the possible pairs in the intesection against the other unsolved
                             #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
                             #We will use itertools.combinations to get all the possible pairs
-                            combi = combinations(inter,2)
+                            #combinations() returns an iterator but we have to convert it to a list to be able to remove elements from it
+                            combi = [elem for elem in combinations(inter,2)]
+                            #We are forced to use a copy of the list because we will remove elements from it while iterating over it
+                            final_combi = combi.copy() 
                             for l in combi:
                                 for m in range(len(grid[0])):
                                     #We might be able to just check unsolved cells, but if we apply the different methods one after the other, then we might have
@@ -284,15 +287,15 @@ def hidden_pairs(grid):
                                     if m!=j and m!=k:
                                         if len(set(l).intersection(set(grid[i][m]))) != 0:
                                             #If the intersection is not empty then we don't have a hidden pair and we can remove it from the list of pairs
-                                            combi.remove(l)
+                                            final_combi.remove(l)
                                             break
                             #Finally, if there is only one pair left then we have a hidden pair and we can remove all other candidates from the two cells
-                            if len(combi) == 1:
+                            if len(final_combi) == 1:
                                 rm_1 = len(grid[i][j]) - 2
                                 rm_2 = len(grid[i][k]) - 2
                                 removed += rm_1 + rm_2
-                                grid[i][j] = list(combi[0])
-                                grid[i][k] = list(combi[0])
+                                grid[i][j] = list(final_combi[0])
+                                grid[i][k] = list(final_combi[0])
                 #Check column
                 for k in range(len(grid)):
                     if i!=k:
@@ -321,7 +324,10 @@ def hidden_pairs(grid):
                             #If the intersection is of length > 2 then we have to check all the possible pairs in the intesection against the other unsolved
                             #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
                             #We will use itertools.combinations to get all the possible pairs
-                            combi = combinations(inter,2)
+                            #combinations() returns an iterator but we have to convert it to a list to be able to remove elements from it
+                            combi = [elem for elem in combinations(inter,2)]
+                            #We are forced to use a copy of the list because we will remove elements from it while iterating over it
+                            final_combi = combi.copy() 
                             for l in combi:
                                 for m in range(len(grid)):
                                     #We might be able to just check unsolved cells, but if we apply the different methods one after the other, then we might have
@@ -329,15 +335,15 @@ def hidden_pairs(grid):
                                     if m!=i and m!=k:
                                         if len(set(l).intersection(set(grid[m][j]))) != 0:
                                             #If the intersection is not empty then we don't have a hidden pair and we can remove it from the list of pairs
-                                            combi.remove(l)
+                                            final_combi.remove(l)
                                             break
                             #Finally, if there is only one pair left then we have a hidden pair and we can remove all other candidates from the two cells
-                            if len(combi) == 1:
+                            if len(final_combi) == 1:
                                 rm_1 = len(grid[i][j]) - 2
                                 rm_2 = len(grid[k][j]) - 2
                                 removed += rm_1 + rm_2
-                                grid[i][j] = list(combi[0])
-                                grid[k][j] = list(combi[0])
+                                grid[i][j] = list(final_combi[0])
+                                grid[k][j] = list(final_combi[0])
                 #Check box
                 box_i = i//3
                 box_j = j//3
@@ -372,7 +378,10 @@ def hidden_pairs(grid):
                                     #If the intersection is of length > 2 then we have to check all the possible pairs in the intesection against the other unsolved
                                     #cells and if we find a pair that yield an empty intersection then we have found a hidden pair
                                     #We will use itertools.combinations to get all the possible pairs
-                                    combi = combinations(inter,2)
+                                    #combinations() returns an iterator but we have to convert it to a list to be able to remove elements from it
+                                    combi = [elem for elem in combinations(inter,2)]
+                                    #We are forced to use a copy of the list because we will remove elements from it while iterating over it
+                                    final_combi = combi.copy() 
                                     for o in combi:
                                         #We have to use a flag variable to break out of the two loops
                                         flag = False
@@ -383,18 +392,19 @@ def hidden_pairs(grid):
                                                 if not((m==i and n==j) or (m==k and n==l)):
                                                     if len(set(o).intersection(set(grid[m][n]))) != 0:
                                                         #If the intersection is not empty then we don't have a hidden pair and we can remove it from the list of pairs
-                                                        combi.remove(o)
+                                                        final_combi.remove(o)
                                                         flag = True
                                                         break
                                             if flag == True:
                                                 break
                                     #Finally, if there is only one pair left then we have a hidden pair and we can remove all other candidates from the two cells
-                                    if len(combi) == 1:
+                                    if len(final_combi) == 1:
                                         rm_1 = len(grid[i][j]) - 2
                                         rm_2 = len(grid[k][l]) - 2
                                         removed += rm_1 + rm_2
-                                        grid[i][j] = list(combi[0])
-                                        grid[k][l] = list(combi[0])
+                                        grid[i][j] = list(final_combi[0])
+                                        grid[k][l] = list(final_combi[0])
+    return (grid, removed)
 
 #===============================================================================================================================================
 
@@ -402,6 +412,7 @@ def hidden_pairs(grid):
 def solve(grid):
     left = 81
     removed = 1
+    steps = 0
     while(left!=0 and removed!=0):
         removed = 0
         grid, rm = simple_elimination(grid)
@@ -413,24 +424,23 @@ def solve(grid):
         grid, rm = hidden_pairs(grid)
         removed += rm
         left = cells_left(grid)
-    return grid
+        steps += 1
+    if left == 0:
+        print("Solved in " + str(steps) + " steps")
+        print_grid(grid)
+    else:
+        print("Could not solve the puzzle with these methods")
+        print("Cells left : " + str(cells_left(grid)))
+        print("Final grid :")
+        print_grid(grid)
 
 #===============================================================================================================================================
 
 #Test the functions
 to_solve = puzzle
 grid = grid_from_string(to_solve)
-print_grid(grid)
 grid = fill_candidates(grid)
 print()
 print_grid(grid)
 print()
-removed = 1
-while(removed!=0):
-    grid, removed1 = simple_elimination(grid)
-    grid, removed2 = naked_pairs(grid)
-    grid, removed3 = hidden_singles(grid)
-    print_grid(grid)
-    print()
-    print(grid)
-    removed = removed1 + removed2 + removed3
+solve(grid)
