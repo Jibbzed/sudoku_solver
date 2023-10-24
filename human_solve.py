@@ -408,6 +408,32 @@ def hidden_pairs(grid):
 
 #===============================================================================================================================================
 
+#3. and 4. : Intersection removal
+#The next two methods are part of a technique called intersection removal
+#The idea is that if any one number occurs twice or thrice in just one unit (any row, column or box) then we can remove that number from the intersection of another unit
+#There are four types of intersection :
+#A Pair or Triple in a box - if they are aligned on a row, n can be removed from the rest of the row
+#A Pair or Triple in a box - if they are aligned on a column, n can be removed from the rest of the column
+#A Pair or Triple on a row - if they are all in the same box, n can be removed from the rest of the box
+#A Pair or Triple on a column - if they are all in the same box, n can be removed from the rest of the box
+
+#===============================================================================================================================================
+
+#3. Pointing pairs
+#The idea is the following : we look at each box and if there a number appears twice or thrice in the box, on the same row or column, then we know that
+#this number MUST appear on that row or column, so we can remove it from the rest of the row or column on which it appears
+def pointing_pairs(grid):
+    print()
+
+#===============================================================================================================================================
+
+#4. Box/line reduction
+#The idea is the exact same than with pointing pairs, but we look at rows and columns instead of boxes and remove from boxes instead of rows and columns
+def box_line_reduction(grid):
+    print()
+
+#===============================================================================================================================================
+
 #Define a solve function that will apply the different methods until the puzzle is solved or no more candidates can be removed
 def solve(grid):
     left = 81
