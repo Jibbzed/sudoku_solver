@@ -423,14 +423,99 @@ def hidden_pairs(grid):
 #The idea is the following : we look at each box and if there a number appears twice or thrice in the box, on the same row or column, then we know that
 #this number MUST appear on that row or column, so we can remove it from the rest of the row or column on which it appears
 def pointing_pairs(grid):
-    print()
+    removed = 0
+    #We look through each box
+    for i in range(len(grid)//3):
+        for j in range(len(grid[0])//3):
+            #We look at each number
+            for k in range(1,10):
+                #We look at each cell in the box and count how many times the number appears and where
+                positions = []
+                for l in range(i*3,i*3+3):
+                    for m in range(j*3,j*3+3):
+                        if k in grid[l][m]:
+                            positions.append((l,m))
+                #If the number appears only twice or thrice, we check if it is aligned on a row or column
+                if len(positions) == 2 or len(positions) == 3:
+                    #We use a set so that if all values are equal then the set is of length 1 (removes duplicates)
+                    #[x[0] for x in positions] returns the first element of each tuple in positions
+                    rows = set([x[0] for x in positions])
+                    cols = set([x[1] for x in positions])
+                    if len(rows) == 1:
+                        #If the number is aligned on a row then we can remove it from the rest of the row
+                        row = rows.pop()
+                        for l in range(len(grid[0])):
+                            if l not in range(j*3,j*3+3):
+                                if k in grid[row][l]:
+                                    grid[row][l].remove(k)
+                                    removed += 1
+                    elif len(cols) == 1:
+                        #If the number is aligned on a column then we can remove it from the rest of the column
+                        col = cols.pop()
+                        for l in range(len(grid)):
+                            if l not in range(i*3,i*3+3):
+                                if k in grid[l][col]:
+                                    grid[l][col].remove(k)
+                                    removed += 1
+    return (grid, removed)
 
 #===============================================================================================================================================
 
 #4. Box/line reduction
 #The idea is the exact same than with pointing pairs, but we look at rows and columns instead of boxes and remove from boxes instead of rows and columns
 def box_line_reduction(grid):
-    print()
+    removed = 0
+    #We look through each row
+    for i in range(len(grid)):
+        #We look at each number
+        for j in range(1,10):
+            #We look at each cell in the row and count how many times the number appears and where
+            positions = []
+            for k in range(len(grid[0])):
+                if j in grid[i][k]:
+                    positions.append((i,k))
+            #If the number appears only twice or thrice, we check if it is aligned on a box
+            if len(positions) == 2 or len(positions) == 3:
+                #We use a set so that if all values are equal then the set is of length 1 (removes duplicates)
+                #[x[1]//3 for x in positions] returns the quotient of the division of the first element of each tuple in positions and 3 (basically the box "number")
+                #We only need to calculate it for the column because we know that the number is aligned on a row (we are checking rows)
+                box_j = set([x[1]//3 for x in positions])
+                if len(box_j) == 1:
+                    #If the number is aligned on a box then we can remove it from the rest of the box
+                    box_i = i//3
+                    box_j = box_j.pop()
+                    for k in range(box_i*3,box_i*3+3):
+                        for l in range(box_j*3,box_j*3+3):
+                            if (k,l) not in positions:
+                                if j in grid[k][l]:
+                                    grid[k][l].remove(j)
+                                    removed += 1
+    #We do the same for columns
+    for i in range(len(grid[0])):
+        #We look at each number
+        for j in range(1,10):
+            #We look at each cell in the column and count how many times the number appears and where
+            positions = []
+            for k in range(len(grid)):
+                if j in grid[k][i]:
+                    positions.append((k,i))
+            #If the number appears only twice or thrice, we check if it is aligned on a box
+            if len(positions) == 2 or len(positions) == 3:
+                #We use a set so that if all values are equal then the set is of length 1 (removes duplicates)
+                #[x[0]//3 for x in positions] returns the quotient of the division of the first element of each tuple in positions and 3 (basically the box "number")
+                #We only need to calculate it for the row because we know that the number is aligned on a column (we are checking columns)
+                box_i = set([x[0]//3 for x in positions])
+                if len(box_i) == 1:
+                    #If the number is aligned on a box then we can remove it from the rest of the box
+                    box_i = box_i.pop()
+                    box_j = i//3
+                    for k in range(box_i*3,box_i*3+3):
+                        for l in range(box_j*3,box_j*3+3):
+                            if (k,l) not in positions:
+                                if j in grid[k][l]:
+                                    grid[k][l].remove(j)
+                                    removed += 1
+    return (grid, removed)
 
 #===============================================================================================================================================
 
