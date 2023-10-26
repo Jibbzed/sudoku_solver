@@ -519,6 +519,89 @@ def box_line_reduction(grid):
 
 #===============================================================================================================================================
 
+#5. X-wing
+#This technique is a bit more complicated than the previous ones, but it is very powerful
+#Basically if a number appears only twice in two rows and the columns correspond, effectively forming a rectangle pattern, then the number can be removed from
+#all other cells in the two columns
+#Works the same way for columns where we remove from rows
+def x_wing(grid):
+    removed = 0
+    #We look at every number
+    for k in range(1,10):
+        #We start by looking at rows
+        rows = []
+        for i in range(len(grid)):
+            #We look at each cell in the row and check how where the number appears 
+            positions = []
+            for j in range(len(grid[0])):
+                if k in grid[i][j]:
+                    positions.append((i,j))
+            #We add this to our dictionnary if the number appears twice
+            if len(positions) == 2:
+                rows.append(positions)
+        #If we at least have two rows with the number appearing twice, then we check if the columns correspond
+        #If the rows list is of length 2 then it's easy, we only have to check the columns
+        #But if it is of length more than 2, then we need to check for every combination of rows
+        #I don't know if the case where there are 3 rows with the same pattern can happen, but I will add a "counter" just in case
+        rows_found = []
+        for i in range(len(rows)-1):
+            for j in range(i+1,len(rows)):
+                #[x[1] for x in rows[i]] returns the second element of each tuple in rows[i]
+                #No need to use a set because we know that the number appears twice in each row and in different columns
+                cols_1 = [x[1] for x in rows[i]]
+                cols_2 = [x[1] for x in rows[j]]
+                if cols_1 == cols_2:
+                    rows_found.append((i,j))
+        #If we found only one pair of rows then we can remove the number from the rest of the columns
+        if len(rows_found) == 1:
+            #We use the first row to get the columns
+            cols = [x[1] for x in rows[rows_found[0][0]]]
+            #We remove the number from the rest of the columns
+            for i in range(len(grid)):
+                if i not in [x[0] for x in rows[rows_found[0][0]]]:
+                    for j in cols:
+                        if k in grid[i][j]:
+                            grid[i][j].remove(k)
+                            removed += 1
+        #Then we do the exact same thing for columns
+        cols = []
+        for i in range(len(grid[0])):
+            #We look at each cell in the column and check how where the number appears 
+            positions = []
+            for j in range(len(grid)):
+                if k in grid[j][i]:
+                    positions.append((j,i))
+            #We add this to our dictionnary if the number appears twice
+            if len(positions) == 2:
+                cols.append(positions)
+        #If we have at least two cols with the number appearing twice, then we check if the rows correspond
+        #If the cols list is of length 2 then it's easy, we only have to check the rows
+        #But if it is of length more than 2, then we need to check for every combination of cols
+        #I don't know if the case where there are 3 cols with the same pattern can happen, but I will add a "counter" just in case
+        cols_found = []
+        for i in range(len(cols)-1):
+            for j in range(i+1,len(cols)):
+                #[x[0] for x in cols[i]] returns the first element of each tuple in cols[i]
+                #No need to use a set because we know that the number appears twice in each cols and in different rows
+                rows_1 = [x[0] for x in cols[i]]
+                rows_2 = [x[0] for x in cols[j]]
+                if rows_1 == rows_2:
+                    cols_found.append((i,j))
+        #If we found only one pair of cols then we can remove the number from the rest of the rows
+        if len(cols_found) == 1:
+            #We use the first column to get the columns
+            rows = [x[0] for x in cols[cols_found[0][0]]]
+            #We remove the number from the rest of the rows
+            for i in range(len(grid[0])):
+                if i not in [x[1] for x in cols[cols_found[0][0]]]:
+                    for j in rows:
+                        if k in grid[j][i]:
+                            grid[j][i].remove(k)
+                            removed += 1
+    return (grid, removed)
+
+#===============================================================================================================================================
+
 #Define a solve function that will apply the different methods until the puzzle is solved or no more candidates can be removed
 def solve(grid):
     left = 81
