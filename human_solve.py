@@ -558,7 +558,7 @@ def x_wing(grid):
             cols = [x[1] for x in rows[rows_found[0][0]]]
             #We remove the number from the rest of the columns
             for i in range(len(grid)):
-                if i not in [x[0] for x in rows[rows_found[0][0]]]:
+                if i not in [rows[x][0][0] for x in rows_found[0]]:
                     for j in cols:
                         if k in grid[i][j]:
                             grid[i][j].remove(k)
@@ -593,7 +593,7 @@ def x_wing(grid):
             rows = [x[0] for x in cols[cols_found[0][0]]]
             #We remove the number from the rest of the rows
             for i in range(len(grid[0])):
-                if i not in [x[1] for x in cols[cols_found[0][0]]]:
+                if i not in [cols[x][0][1] for x in cols_found[0]]:
                     for j in rows:
                         if k in grid[j][i]:
                             grid[j][i].remove(k)
@@ -616,6 +616,12 @@ def solve(grid):
         grid, rm = hidden_singles(grid)
         removed += rm
         grid, rm = hidden_pairs(grid)
+        removed += rm
+        grid, rm = pointing_pairs(grid)
+        removed += rm
+        grid, rm = box_line_reduction(grid)
+        removed += rm
+        grid, rm = x_wing(grid)
         removed += rm
         left = cells_left(grid)
         steps += 1
